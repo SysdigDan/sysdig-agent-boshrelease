@@ -1,0 +1,5 @@
+check process dragent
+  with pidfile /var/vcap/sys/run/sysdig-agent/dragent.pid
+  start program "/var/vcap/jobs/sysdig-agent/bin/ctl start"
+  stop program "/var/vcap/jobs/sysdig-agent/bin/ctl stop"
+  group vcap

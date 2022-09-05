@@ -1,0 +1,16 @@
+releases:
+- name: sysdig-agent
+  version: 1.0.0
+
+addons:
+- name: sysdig-agent-addon
+  jobs:
+  - name: sysdig-agent
+    release: sysdig-agent
+    properties:
+      agent_version: '12.8.1'
+      agent_key: ''
+      collector_endpoint: 'ingest.au1.sysdig.com'
+  include:
+    stemcell:
+      - os: ubuntu-xenial

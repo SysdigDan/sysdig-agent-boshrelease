@@ -1,0 +1,24 @@
+---
+name: sysdig-agent
+
+description: "This job will setup and run Sysdig Agent for Linux"
+
+templates:
+  ctl.erb: bin/ctl
+
+packages:
+- sysdig-agent
+
+properties:
+  agent_version:
+    description: 'Sysdig agent version which will be deployed.'
+    default: '12.8.1'
+  agent_key:
+    description: 'The agent access key. You can retrieve this from Settings > Agent Installation in either Sysdig Monitor or Sysdig Secure.'
+  collector_endpoint:
+    description: 'The collector URL for Sysdig Monitor or Sysdig Secure. This value is region-dependent in SaaS and is auto-completed on the Get Started page in the UI.'
+    default: 'ingest.au1.sysdig.com'
+  tags:
+    description: 'Enter meaningful tags you want applied to your instances.'
+  additional_conf:
+    description: 'Use this option to provide custom configuration values to the agent as environment variables.'

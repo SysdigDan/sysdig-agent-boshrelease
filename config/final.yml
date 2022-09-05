@@ -1,0 +1,6 @@
+---
+blobstore:
+  provider: local
+  options:
+    blobstore_path: /tmp/sysdig-blob-store
+final_name: sysdig-agent

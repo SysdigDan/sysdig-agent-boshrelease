@@ -1,0 +1,146 @@
+#!/bin/bash
+
+set -e # exit immediately if a simple command exits with a non-zero status
+
+LOG_DIR=/var/vcap/sys/log/sysdig-agent
+LOG_FILE=${LOG_DIR}/sysdig-agent.ctl.log
+
+RUN_DIR=/var/vcap/sys/run/sysdig-agent
+PIDFILE=${RUN_DIR}/dragent.pid
+
+install_agent() {
+	echo "$(date) - Installing/Upgrading Sysdig Agent BOSH Add-on Release"
+	mkdir -p ./extracted-agent
+	mkdir -p /opt/draios
+	mkdir -p /usr/src
+
+  apt-get -qq install apt-transport-https
+
+	curl -s https://download.sysdig.com/DRAIOS-GPG-KEY.public | apt-key add -
+	curl -s -o /etc/apt/sources.list.d/draios.list https://download.sysdig.com/stable/deb/draios.list
+
+  apt-get -qq update && apt-get -qq install --download-only -o Dir::Cache="/tmp/" draios-agent=${SYSDIG_AGENT_VERSION}
+  dpkg -x /tmp/archives/draios-agent_${SYSDIG_AGENT_VERSION}_amd64.deb ./extracted-agent
+
+  cp -R ./extracted-agent/opt/* /opt/
+  cp -R ./extracted-agent/usr/src/* /usr/src/
+}
+
+remove_agent() {
+	echo "$(date) - Removing Sysdig Agent BOSH Add-on Release"
+	rm -rf /opt/draios 2> /dev/null
+	rm -rf /usr/src/draios-agent* 2> /dev/null
+}
+
+configure_agent() {
+	echo "$(date) - Setting Sysdig Agent Configuration"
+	CONFIG_FILE=/opt/draios/etc/dragent.yaml
+
+	if ! grep ^customerid ${CONFIG_FILE} > /dev/null 2>&1; then
+		echo "customerid: ${SYSDIG_AGENT_KEY}" >> ${CONFIG_FILE}
+	else
+		sed -i "s/^customerid.*/customerid: ${SYSDIG_AGENT_KEY}/g" ${CONFIG_FILE}
+	fi
+
+	if [ ! -z "${SYSDIG_COLLECTOR_ENDPOINT}" ]; then
+		echo "$(date) - Setting collector endpoint"
+
+		if ! grep ^collector: ${CONFIG_FILE} > /dev/null 2>&1; then
+			echo "collector: ${SYSDIG_COLLECTOR_ENDPOINT}" >> ${CONFIG_FILE}
+		else
+			sed -i "s/^collector:.*/collector: ${SYSDIG_COLLECTOR_ENDPOINT}/g" ${CONFIG_FILE}
+		fi
+	fi
+
+	if [ ! -z "$SYSDIG_TAGS" ]; then
+		echo "* Setting tags"
+
+		if ! grep ^tags $CONFIG_FILE > /dev/null 2>&1; then
+			echo "tags: $SYSDIG_TAGS" >> $CONFIG_FILE
+		else
+			sed -i "s/^tags.*/tags: $SYSDIG_TAGS/g" $CONFIG_FILE
+		fi
+	fi
+
+	if [ ! -z "$SYSDIG_ADDITIONAL_CONF" ]; then
+		echo "* Adding additional configuration to dragent.yaml"
+
+		echo -e "$SYSDIG_ADDITIONAL_CONF" >> $CONFIG_FILE
+	fi
+}
+
+main() {
+  case $1 in
+		start)
+		  mkdir -p $RUN_DIR $LOG_DIR
+      chown -R vcap:vcap $RUN_DIR $LOG_DIR
+
+			echo $$ > ${PIDFILE}
+
+			agent_version='<%= p("agent_version") %>'
+			agent_key='<%= p("agent_key") %>'
+			collector_endpoint='<%= p("collector_endpoint") %>'
+
+			<% if_p("tags") do |tags_value| %>
+				tags='<%= tags_value %>'
+			<% end %>
+			<% if_p("additional_conf") do |additional_conf_value| %>
+				additional_conf='<%= additional_conf_value %>'
+			<% end %>
+
+			echo "$(date) - Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
+
+			export SYSDIG_AGENT_VERSION=${agent_version}
+			export SYSDIG_AGENT_KEY=${agent_key}
+			export SYSDIG_COLLECTOR_ENDPOINT=${collector_endpoint}
+			export SYSDIG_TAGS=${tags}
+			export SYSDIG_ADDITIONAL_CONF=${additional_conf}
+			export SYSDIG_PROG_DIR="/opt/draios/bin"
+			export SYSDIG_PROBE="sysdigcloud-probe-${SYSDIG_AGENT_VERSION}-x86_64-4.15.0-191-generic-d8051e959d836ee23665f1d33702220a.ko"
+			export SYSDIG_PROBE_URL="https://s3.amazonaws.com/download.draios.com/stable/sysdig-probe-binaries"
+			export SYSDIG_PROBE_DOWNLOAD="${SYSDIG_PROBE_URL}/${SYSDIG_PROBE}"
+			export SYSDIG_FORCE_DOWNLOAD_PROBE="true"
+			export SYSDIG_PROBE_OVERRIDE_FULL_URL="${SYSDIG_PROBE_DOWNLOAD}"
+
+			if [ ! -d "${SYSDIG_PROG_DIR}" ] || [ $(${SYSDIG_PROG_DIR}/dragent --version) != "${SYSDIG_AGENT_VERSION}" ]; then
+				remove_agent
+				install_agent
+
+				echo "$(date) - Using the following sydigcloud precompiled probe - ${SYSDIG_PROBE}"
+				modprobe -q sysdigcloud-probe || ${SYSDIG_PROG_DIR}/sysdigcloud-probe-loader
+			else
+				echo "$(date) - No Install or Upgrade Required"
+			fi
+
+			echo "$(date) - Configuring Sysdig Agent BOSH Add-on Release"
+			configure_agent
+
+			echo "$(date) - Starting Sysdig Agent BOSH Add-on Release"
+			exec ${SYSDIG_PROG_DIR}/dragent --daemon --dragentpid=${PIDFILE}
+			;;
+		stop)
+		  mkdir -p $RUN_DIR $LOG_DIR
+      chown -R vcap:vcap $RUN_DIR $LOG_DIR
+
+			echo "$(date) - Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
+			echo "$(date) - Stopping Sysdig Agent BOSH Add-on Release"
+			kill -TERM $(pidof dragent)
+			rm -f ${PIDFILE}
+			;;
+		*)
+			echo "$(date) - Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
+			echo "Usage: ctl {start|stop}"
+			;;
+	esac
+	exit 0
+}
+
+# Run the main script logic only if the script has been executed directly.
+# This allows us to source the script in order to unit test specific functions
+if [[ "$(basename $0)" == "ctl" ]]; then
+	# Redirect stdout and stderr to the log file, since otherwise there is no way to troubleshoot failed TAS deployments
+	exec 1>>${LOG_FILE} 2>&1
+
+	main "$@"
+fi
+
