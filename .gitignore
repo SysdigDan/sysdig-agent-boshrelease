@@ -22,5 +22,4 @@
 **/.final_builds
 **/index.yml
 **/*.tgz
-scripts/
 blobstore/
