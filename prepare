@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+set -e
+
+SRC=$(pwd)/blobs
+SHELL=/bin/bash
+AWK=awk
+
+read_spec() {
+  local spec="$1"
+  $AWK '/^files:/ {
+    while (getline) {
+      if ($1 == "-") {
+        if ($3 ~ /#/) {
+          url=$3$4;
+          sub(/#/, "", url)
+          print $2"@"url;
+        }
+      } else {
+        next;
+      }
+    }
+  }' "$spec"
+}
+
+exec_download() {
+  local output="$1"
+  local url="$2"
+  local package=$(dirname "${output}")
+  local src=$(basename "${output}")
+  (
+    cd ${SRC}
+    if [ ! -s "${output}" ]; then
+      echo "  Downloading ${url} ..."
+      mkdir -p "${package}"
+      curl -L --fail "${url}" -o "${output}"
+    fi
+  )
+}
+
+add_blob() {
+  local blob="$1"
+  bosh add-blob ${SRC}/${1} ${1} || true
+}
+
+get_agent_version() {
+  local file="$1"
+  local version=""
+  if [ -f $file ]; then
+    version=$(grep -o -h -e "SYSDIG_AGENT_VERSION=[0-9]\.[0-9]\.[0-9][~]*[r]*[c]*\.*[0-9]*" $file)
+    version=$(echo $version | cut -d'=' -f 2)
+  fi
+  echo $version
+}
+
+check_versions() {
+  local agent_script=$(pwd)/packages/sysdig-agent/packaging
+  local agent_version=$(get_agent_version $agent_script)
+  for script in $(pwd)/packages/*/spec ; do
+    local base=$(dirname "${script}")
+      local priorversion=""
+      for spec in $(read_spec "${script}"); do
+        local downloadfile=$(echo $spec | cut -d'@' -f 1)
+        local downloadurl=$(echo $spec | cut -d'@' -f 2)
+        local file_version=$(echo $downloadfile | grep -o -h -e "[0-9]\.[0-9]\.[0-9][~]*[r]*[c]*\.*[0-9]*")
+        local url_version=$(echo $downloadfile | grep -o -h -e "[0-9]\.[0-9]\.[0-9][~]*[r]*[c]*\.*[0-9]*")
+
+        if [ "$file_version" != "$url_version" ]; then
+          echo "The Agent versions in the File and URL do not match"
+          exit 1
+        fi
+
+        local version="$file_version"
+
+        if [ -n "$version" ]; then
+          if [ "$version" = "$agent_version" ]; then
+            if [ -n "$priorversion" ]; then
+              if [ "$version" != "$priorversion" ]; then
+                echo "The Agent blob versions do not match"
+                exit 1
+              fi
+            fi
+          else
+            echo "The Agent versions do not match the version in the script"
+            exit 1
+          fi
+        fi
+        priorversion="$version"
+      done
+  done
+}
+
+remove_stale() {
+  local spec_files=""
+  for spec in $(read_spec "${script}"); do
+    local downloadfile=$(echo $spec | cut -d'@' -f 1)
+    local filename=$(echo $downloadfile | cut -d'/' -f 2)
+    spec_files="$filename $spec_files"
+  done
+  # Remove any files in blobs/sysdig-agent that aren't in spec
+  for saved_file in $(ls blobs/sysdig-agent); do
+    if [[ !("$spec_files" =~ .*"$saved_file".*) ]]; then
+      bosh remove-blob "sysdig-agent/$saved_file"
+    fi
+  done
+}
+
+main() {
+  # When using local blobs, its useful to start with an empty slate
+  if [ $CLEAN_BLOBS ]; then
+    > config/blobs.yml
+  fi
+
+  for script in $(pwd)/packages/*/spec ; do
+    local base=$(dirname "${script}")
+      echo "* Procesing ${script} ..."
+      local priorversion=""
+      for spec in $(read_spec "${script}"); do
+        local downloadfile=$(echo $spec | cut -d'@' -f 1)
+        local file_version=$(echo $downloadfile | grep -o -h -e "[0-9]\.[0-9]\.[0-9][~]*[r]*[c]*\.*[0-9]*")
+        local downloadurl=$(echo $spec | cut -d'@' -f 2)
+
+        exec_download "${downloadfile}" "${downloadurl}"
+        add_blob "${downloadfile}"
+      done
+  done
+
+  # check_versions
+  remove_stale
+}
+
+# Run!
+mkdir -p $SRC
+main
