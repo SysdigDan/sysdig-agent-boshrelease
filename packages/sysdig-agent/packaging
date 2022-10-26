@@ -30,6 +30,7 @@ mkdir -p ./extracted-agent
 
 echo "$(date) - Extracting packages"
 if [ $OS == "Debian" ]; then
+sysdig-agent/draios-12.9.0-x86_64-agent.deb
   dpkg -x sysdig-agent/draios-${SYSDIG_AGENT_VERSION}-x86_64-agent.deb ./extracted-agent
   cp -R ./extracted-agent/opt/draios/* ${BOSH_INSTALL_TARGET}
   cp sysdig-agent/${SYSDIG_PROBE_FILENAME} ${BOSH_INSTALL_TARGET}/probe/sysdigcloud-kernel-probe.ko
