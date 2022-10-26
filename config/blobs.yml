@@ -1,7 +1,15 @@
+sysdig-agent/draios-agent_12.8.1_amd64.deb:
+  size: 176689208
+  object_id: 3dabb36b-3d66-498f-5df1-2cba6a2720f9
+  sha: sha256:6789f7df1dbe75acd0b97518279f9595320bb7f3c2263329fdec0d5713a28273
 sysdig-agent/draios-agent_12.9.0_amd64.deb:
   size: 168434406
   object_id: 5f047f1d-e937-413b-61a3-9e5af809a2d2
   sha: sha256:543c75201c2862caf7adc98797248d9560a38618832ae0d3535ca47ddfb87ecc
+sysdig-agent/sysdigcloud-probe-12.8.1-x86_64-4.15.0-191-generic.ko:
+  size: 801312
+  object_id: 2980d101-633e-4efe-40e4-4885e3804c46
+  sha: sha256:4196a36b89a52b56d315a66617cdbfed96fe11db23ea20df792e143046caba28
 sysdig-agent/sysdigcloud-probe-12.9.0-x86_64-4.15.0-191-generic.ko:
   size: 804024
   object_id: c3121a24-308d-463f-4cd5-ac73e02306c8
