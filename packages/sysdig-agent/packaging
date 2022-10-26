@@ -9,6 +9,7 @@ set -e -x
 # Grab the latest versions that are in the directory
 SYSDIG_AGENT_VERSION="12.9.0"
 SYSDIG_PROBE_FILENAME="sysdigcloud-probe-${SYSDIG_AGENT_VERSION}-x86_64-4.15.0-191-generic.ko"
+
 JOB_NAME="sysdig-agent"
 BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
 
@@ -29,9 +30,8 @@ mkdir -p ./extracted-agent
 
 echo "$(date) - Extracting packages"
 if [ $OS == "Debian" ]; then
-  dpkg -x sysdig-agent/draios-agent_${SYSDIG_AGENT_VERSION}_amd64.deb ./extracted-agent
+  dpkg -x sysdig-agent/draios-${SYSDIG_AGENT_VERSION}-x86_64-agent.deb ./extracted-agent
   cp -R ./extracted-agent/opt/draios/* ${BOSH_INSTALL_TARGET}
-  # cp -R ./extracted-agent/usr ${BOSH_INSTALL_TARGET}
   cp sysdig-agent/${SYSDIG_PROBE_FILENAME} ${BOSH_INSTALL_TARGET}/probe/sysdigcloud-kernel-probe.ko
 fi
 
