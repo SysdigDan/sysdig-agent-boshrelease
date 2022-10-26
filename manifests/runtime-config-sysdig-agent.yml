@@ -1,6 +1,6 @@
 releases:
 - name: sysdig-agent
-  version: 1+dev.14
+  version: 12.9.0
 - name: node-exporter
   version: 5.0.0
 
