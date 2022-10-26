@@ -1,7 +1,7 @@
 #!/bin/bash
 
 AGENT_VERSION=12.9.0
-RELEASE_DEV_VERSION=1+dev.22
+RELEASE_DEV_VERSION=1+dev.23
 
 bosh add-blob tmp/draios-agent_${AGENT_VERSION}_amd64.deb sysdig-agent/draios-agent_${AGENT_VERSION}_amd64.deb
 bosh add-blob tmp/sysdigcloud-probe-${AGENT_VERSION}-x86_64-4.15.0-191-generic.ko sysdig-agent/sysdigcloud-probe-${AGENT_VERSION}-x86_64-4.15.0-191-generic.ko
