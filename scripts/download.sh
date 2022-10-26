@@ -3,7 +3,7 @@
 set -e
 
 TMP_DIR=tmp/
-AGENT_VERSION=12.8.1
+AGENT_VERSION=12.9.0
 
 mkdir -p $TMP_DIR
 cd $TMP_DIR
