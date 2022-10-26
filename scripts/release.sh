@@ -13,7 +13,9 @@ if [ "$1" = "--dev-only" ]; then
   scp -P 2222 tmp/sysdig-agent-release-${RELEASE_DEV_VERSION}.tgz admin@192.168.101.101://volume1/web
 elif [ "$1" = "--release" ]; then
   # release a dev version of the agent to ensure the cache is warm
+  # (it's better to fail here than to fail when really attempting to release it)
   bosh create-release --force --name ${RELEASE} --version=${RELEASE_DEV_VERSION} --tarball=tmp/sysdig-agent-release-${RELEASE_DEV_VERSION}.tgz
+
   # finally, release the agent
   bosh create-release --force --final --name ${RELEASE} --version=${SYSDIG_AGENT_VERSION} --tarball=tmp/sysdig-agent-release-${SYSDIG_AGENT_VERSION}.tgz
   bosh upload-blobs
@@ -25,7 +27,6 @@ elif [ "$1" = "--release" ]; then
 
   # git commit it and then push it to the repo
   git add .
-  git commit -m "releases sysdig agent ${SYSDIG_AGENT_VERSION}"
+  git commit -m "Release Sysdig Agent ${SYSDIG_AGENT_VERSION}"
   git push
 fi
-
