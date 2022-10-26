@@ -1,0 +1,20 @@
+global:
+  # How frequently to scrape targets by default.
+  scrape_interval: 10s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    bosh_ip: <%= spec.ip %>
+    bosh_deployment: <%= spec.deployment %>
+    bosh_az: <%= spec.az %>
+
+# A list of scrape configurations.
+<% scrape_configs = p('prometheus.scrape_configs', []).map do |scrape_config|
+  scrape_config = scrape_config.clone
+  scrape_config['tls_config'] = scrape_config['tls_config'].clone
+  ['ca_contents', 'cert_contents', 'key_contents'].each { |key| scrape_config['tls_config'].delete(key) } if scrape_config['tls_config']
+  scrape_config
+end %>
+
+scrape_configs: <%= scrape_configs.to_yaml[3..-1] %>

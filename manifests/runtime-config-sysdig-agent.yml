@@ -1,16 +1,38 @@
 releases:
 - name: sysdig-agent
-  version: 1.0.0
+  version: 1+dev.14
+- name: node-exporter
+  version: 5.0.0
 
 addons:
 - name: sysdig-agent-addon
   jobs:
-  - name: sysdig-agent
-    release: sysdig-agent
-    properties:
-      agent_version: '12.8.1'
-      agent_key: ''
-      collector_endpoint: 'ingest.au1.sysdig.com'
+    - name: sysdig-agent
+      release: sysdig-agent
+      properties:
+        agent_key: ''
+        agent_mode: 'troubleshooting'
+        collector_endpoint: 'ingest.au1.sysdig.com'
+        prometheus:
+          scrape_configs:
+            - job_name: node_exporter
+              static_configs:
+              - targets:
+                - localhost:9100
   include:
+    deployments:
+      - harbor-container-registry-b7a63bcc91052b3ccd2b
+      - cf-7fb2fcbf9a2479102cf0
+    stemcell:
+      - os: ubuntu-xenial
+- name: node_exporter
+  jobs:
+    - name: node_exporter
+      release: node-exporter
+      properties: {}
+  include:
+    deployments:
+      - harbor-container-registry-b7a63bcc91052b3ccd2b
+      - cf-7fb2fcbf9a2479102cf0
     stemcell:
       - os: ubuntu-xenial

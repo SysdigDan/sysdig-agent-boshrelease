@@ -2,5 +2,5 @@
 blobstore:
   provider: local
   options:
-    blobstore_path: /tmp/sysdig-blob-store
+    blobstore_path: blobstore
 final_name: sysdig-agent

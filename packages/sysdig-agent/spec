@@ -1,6 +1,6 @@
 ---
 name: sysdig-agent
 
-dependencies: []
-
-files: []
+files:
+- sysdig-agent/draios-agent_12.9.0_amd64.deb
+- sysdig-agent/sysdigcloud-probe-12.9.0-x86_64-4.15.0-191-generic.ko

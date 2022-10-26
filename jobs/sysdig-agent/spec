@@ -1,24 +1,33 @@
 ---
 name: sysdig-agent
-
 description: "This job will setup and run Sysdig Agent for Linux"
-
-templates:
-  ctl.erb: bin/ctl
-
 packages:
 - sysdig-agent
+templates:
+  bin/pre-start.erb: bin/pre-start
+  bin/ctl.erb: bin/ctl
+  config/dragent.yaml.erb: config/dragent.yaml
+  config/prometheus.yaml: config/prometheus.yaml
 
 properties:
-  agent_version:
-    description: 'Sysdig agent version which will be deployed.'
-    default: '12.8.1'
   agent_key:
     description: 'The agent access key. You can retrieve this from Settings > Agent Installation in either Sysdig Monitor or Sysdig Secure.'
+  agent_mode:
+    description: 'Agent modes provide the ability to control metric collection to fit your scale and specific requirement. '
+    default: 'monitor'
   collector_endpoint:
     description: 'The collector URL for Sysdig Monitor or Sysdig Secure. This value is region-dependent in SaaS and is auto-completed on the Get Started page in the UI.'
     default: 'ingest.au1.sysdig.com'
+  proxy:
+    description: Proxy settings to connect to the Internet
+    example:
+      host: proxy
+      port: 8080
+      user: user
+      password: pass
   tags:
     description: 'Enter meaningful tags you want applied to your instances.'
   additional_conf:
     description: 'Use this option to provide custom configuration values to the agent as environment variables.'
+  prometheus:
+    description: "Array of scrape configurations"

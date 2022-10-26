@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# Unless explicitly stated otherwise all files in this repository are licensed under the Apache 2.0 License.
+# This product includes software developed by Daniel Moloney @ Sysdig.
+# Copyright 2022-Present Daniel Moloney.
+
+set -e -x
+
+LOG_DIR=/var/vcap/sys/log/sysdig-agent
+LOG_FILE=${LOG_DIR}/sysdig-agent.ctl.log
+
+RUN_DIR=/var/vcap/sys/run/sysdig-agent
+PIDFILE=${RUN_DIR}/dragent.pid
+
+remove_kernel_probe() {
+	echo "$(date) - Unloading ${SYSDIG_PROBE_NAME}, if present"
+
+	# Tries to remove the module within a predefined time ($MAX_RMMOD_WAIT)
+	rmmod "${SYSDIG_PROBE_NAME}" 2>/dev/null
+	WAIT_TIME=0
+	KMOD_NAME=$(echo "${SYSDIG_PROBE_NAME}" | tr "-" "_")
+	while lsmod | grep "${KMOD_NAME}" > /dev/null 2>&1 && [ $WAIT_TIME -lt $MAX_RMMOD_WAIT ]; do
+		if rmmod "${SYSDIG_PROBE_NAME}" 2>/dev/null; then
+			echo "$(date) - Unloading ${SYSDIG_PROBE_NAME} succeeded after ${WAIT_TIME}s"
+			break
+		fi
+		((++WAIT_TIME))
+		if (( $WAIT_TIME % 5 == 0 )); then
+			echo "$(date) - ${SYSDIG_PROBE_NAME} still loaded, waited ${WAIT_TIME}s (max wait ${MAX_RMMOD_WAIT}s)"
+		fi
+		sleep 1
+	done
+
+	# Still loaded
+	if lsmod | grep "${KMOD_NAME}" > /dev/null 2>&1; then
+		echo "$(date) - ${SYSDIG_PROBE_NAME} seems to still be loaded, hoping the best"
+		return 1
+	fi
+
+	return 0
+}
+
+load_precompiled_kernel_probe() {
+	echo "$(date) - Loading kernel probe"
+	insmod_out=$(insmod "${SYSDIG_PROBE_DIR}/sysdigcloud-kernel-probe.ko")
+	if [ $? -ne 0 ]; then
+		echo "Cannot insmod, error $insmod_out"
+		return 1
+	fi
+}
+
+main() {
+  case $1 in
+		start)
+			MAX_RMMOD_WAIT=60
+			SYSDIG_PROG_DIR="/var/vcap/packages/sysdig-agent/bin"
+			SYSDIG_PROBE_DIR="/var/vcap/packages/sysdig-agent/probe"
+			SYSDIG_PROBE_NAME="sysdigcloud_probe"
+
+			echo "$(date) - Starting Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
+		  mkdir -p $RUN_DIR $LOG_DIR
+      chown -R vcap:vcap $RUN_DIR $LOG_DIR
+
+			echo $$ > ${PIDFILE}
+
+			echo "$(date) - Setting up the sydigcloud precompiled probe"
+			remove_kernel_probe
+			if [ $? -eq 1 ]; then
+				return 0
+			fi
+
+			load_precompiled_kernel_probe
+
+			echo "$(date) - Starting Sysdig Agent BOSH Add-on Release"
+			exec ${SYSDIG_PROG_DIR}/dragent --daemon --dragentpid=${PIDFILE}
+			;;
+		stop)
+			echo "$(date) - Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
+		  mkdir -p $RUN_DIR $LOG_DIR
+      chown -R vcap:vcap $RUN_DIR $LOG_DIR
+
+			echo "$(date) - Stopping Sysdig Agent BOSH Add-on Release"
+			kill -TERM $(pidof dragent)
+			rm -f ${PIDFILE}
+			;;
+		*)
+			echo "$(date) - Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
+			echo "Usage: ctl {start|stop}"
+			;;
+	esac
+	exit 0
+}
+
+# Run the main script logic only if the script has been executed directly.
+# This allows us to source the script in order to unit test specific functions
+if [[ "$(basename $0)" == "ctl" ]]; then
+	# Redirect stdout and stderr to the log file, since otherwise there is no way to troubleshoot failed TAS deployments
+	exec 1>>${LOG_FILE} 2>&1
+
+	main "$@"
+fi
+

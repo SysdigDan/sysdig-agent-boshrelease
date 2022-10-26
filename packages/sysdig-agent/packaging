@@ -1,3 +1,44 @@
 #!/usr/bin/env bash
 
-# Creating an empty packages configuration and packaging script placeholder
+# Unless explicitly stated otherwise all files in this repository are licensed under the Apache 2.0 License.
+# This product includes software developed by Daniel Moloney @ Sysdig.
+# Copyright 2022-Present Daniel Moloney.
+
+set -e -x
+
+# Grab the latest versions that are in the directory
+SYSDIG_AGENT_VERSION="12.9.0"
+SYSDIG_PROBE_FILENAME="sysdigcloud-probe-${SYSDIG_AGENT_VERSION}-x86_64-4.15.0-191-generic.ko"
+JOB_NAME="sysdig-agent"
+BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
+
+KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon|Arista|SUSE)"
+DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || uname -s)
+
+if [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" ]; then
+    OS="Debian"
+else
+    echo "$(date) - This distribution is not supported by sysdig"
+    exit 1
+fi
+
+AGENT_CONFIG_TARGET=${BOSH_INSTALL_TARGET}/etc
+
+mkdir -p ${BOSH_INSTALL_TARGET}/probe
+mkdir -p ./extracted-agent
+
+echo "$(date) - Extracting packages"
+if [ $OS == "Debian" ]; then
+  dpkg -x sysdig-agent/draios-agent_${SYSDIG_AGENT_VERSION}_amd64.deb ./extracted-agent
+  cp -R ./extracted-agent/opt/draios/* ${BOSH_INSTALL_TARGET}
+  # cp -R ./extracted-agent/usr ${BOSH_INSTALL_TARGET}
+  cp sysdig-agent/${SYSDIG_PROBE_FILENAME} ${BOSH_INSTALL_TARGET}/probe/sysdigcloud-kernel-probe.ko
+fi
+
+echo "Setting up configuration ..."
+pushd ${AGENT_CONFIG_TARGET}
+  rm -rf dragent.yaml prometheus.yaml
+  # create the links to the configuration
+  ln -s /var/vcap/jobs/$JOB_NAME/config/dragent.yaml dragent.yaml
+  ln -s /var/vcap/jobs/$JOB_NAME/config/prometheus.yaml prometheus.yaml
+popd

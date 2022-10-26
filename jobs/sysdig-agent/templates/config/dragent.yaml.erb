@@ -1,0 +1,16 @@
+customerid: <%= p('agent_key') %>
+collector: <%= p('collector_endpoint') %>
+tags: bosh_ip:<%= spec.ip %>,bosh_deployment:<%= spec.deployment %>,bosh_az:<%= spec.az %>
+feature:
+  mode: <%= p('agent_mode') %>
+<% if p("proxy.host", false) || p("proxy.port", false) %>
+http_proxy:
+  proxy_host: <%= p('proxy.host') %>
+  proxy_port: <%= p('proxy.port') %>
+  <% if_p("proxy.user") do |user| %>
+  proxy_user: <%= user %>
+  <% end %>
+  <% if_p("proxy.password") do |password| %>
+  proxy_password: <%= password %>
+  <% end %>
+<% end %>
