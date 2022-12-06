@@ -53,7 +53,7 @@ main() {
 	SYSDIG_PROG_DIR="/var/vcap/packages/sysdig-agent/bin"
 	SYSDIG_PROBE_DIR="/var/vcap/packages/sysdig-agent/probe"
 	SYSDIG_PROBE_NAME="sysdigcloud_probe"
-	
+
   case $1 in
 		start)
 			echo "$(date) - Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
@@ -77,7 +77,6 @@ main() {
 			echo "$(date) - Stopping Sysdig Agent BOSH Add-on Release"
 			kill -TERM $(pidof dragent)
 			rm -f ${PIDFILE}
-
 
 			echo "$(date) - Removing sydigcloud precompiled probe"
 			remove_kernel_probe
