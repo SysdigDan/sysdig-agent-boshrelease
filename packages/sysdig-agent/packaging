@@ -35,7 +35,7 @@ if [ $OS == "Debian" ]; then
   cp sysdig-agent/${SYSDIG_PROBE_FILENAME} ${BOSH_INSTALL_TARGET}/probe/sysdigcloud-kernel-probe.ko
 fi
 
-echo "Setting up configuration ..."
+echo "$(date) - Setting up configuration ..."
 pushd ${AGENT_CONFIG_TARGET}
   rm -rf dragent.yaml prometheus.yaml
   # create the links to the configuration

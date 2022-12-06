@@ -1,0 +1,19 @@
+releases:
+- name: sysdig-agent
+  version: 12.9.1
+
+addons:
+- name: sysdig-agent-addon
+  jobs:
+    - name: sysdig-agent
+      release: sysdig-agent
+      properties:
+        agent_key: ''
+        agent_mode: 'troubleshooting'
+        collector_endpoint: 'ingest.au1.sysdig.com'
+  include:
+    deployments:
+      - harbor-container-registry-b7a63bcc91052b3ccd2b
+      - cf-7fb2fcbf9a2479102cf0
+    stemcell:
+      - os: ubuntu-xenial

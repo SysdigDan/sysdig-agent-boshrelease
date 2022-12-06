@@ -33,10 +33,9 @@ remove_kernel_probe() {
 
 	# Still loaded
 	if lsmod | grep "${KMOD_NAME}" > /dev/null 2>&1; then
-		echo "$(date) - ${SYSDIG_PROBE_NAME} seems to still be loaded, hoping the best"
+		echo "$(date) - ${SYSDIG_PROBE_NAME} seems to still be loaded, hoping for the best"
 		return 1
 	fi
-
 	return 0
 }
 
@@ -57,7 +56,7 @@ main() {
 			SYSDIG_PROBE_DIR="/var/vcap/packages/sysdig-agent/probe"
 			SYSDIG_PROBE_NAME="sysdigcloud_probe"
 
-			echo "$(date) - Starting Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
+			echo "$(date) - Loading Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
 		  mkdir -p $RUN_DIR $LOG_DIR
       chown -R vcap:vcap $RUN_DIR $LOG_DIR
 
@@ -82,6 +81,12 @@ main() {
 			echo "$(date) - Stopping Sysdig Agent BOSH Add-on Release"
 			kill -TERM $(pidof dragent)
 			rm -f ${PIDFILE}
+
+			echo "$(date) - Removing sydigcloud precompiled probe"
+			remove_kernel_probe
+			if [ $? -eq 1 ]; then
+				return 0
+			fi
 			;;
 		*)
 			echo "$(date) - Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
