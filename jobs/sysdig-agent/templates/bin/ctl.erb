@@ -29,7 +29,7 @@ remove_kernel_probe() {
 		if (( $WAIT_TIME % 5 == 0 )); then
 			echo "$(date) - ${SYSDIG_PROBE_NAME} still loaded, waited ${WAIT_TIME}s (max wait ${MAX_RMMOD_WAIT}s)"
 		fi
-		sleep 5
+		sleep 1
 	done
 
 	# Still loaded
@@ -68,13 +68,19 @@ main() {
 				return 0
 			fi
 
-			load_precompiled_kernel_probe
+			PROBE=${SYSDIG_PROBE_DIR}/sysdigcloud-kernel-probe.ko
+			if [-f $PROBE]; then
+				load_precompiled_kernel_probe
+			else
+				echo "$(date) - Sysdig Probe not available for kernel " $KVERSION
+				return 0
+			fi
 
-			echo "$(date) - Starting Sysdig Agent BOSH Add-on Release"
+			echo "$(date) - Starting Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
 			exec ${SYSDIG_PROG_DIR}/dragent --daemon --dragentpid=${PIDFILE}
 			;;
 		stop)
-			echo "$(date) - Stopping Sysdig Agent BOSH Add-on Release"
+			echo "$(date) - Stopping Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
 			kill -TERM $(pidof dragent)
 			rm -f ${PIDFILE}
 

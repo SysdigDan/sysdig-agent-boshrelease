@@ -7,8 +7,7 @@
 set -e -x
 
 # Grab the latest versions that are in the directory
-SYSDIG_AGENT_VERSION="12.9.1"
-SYSDIG_PROBE_FILENAME="sysdigcloud-probe-${SYSDIG_AGENT_VERSION}-x86_64-4.15.0-191-generic.ko"
+SYSDIG_AGENT_VERSION="12.10.0"
 
 JOB_NAME="sysdig-agent"
 BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
@@ -18,8 +17,9 @@ DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || gre
 
 if [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" ]; then
     OS="Debian"
+    KVERSION="$(uname -r)"
 else
-    echo "$(date) - This distribution is not supported by sysdig"
+    echo "$(date) - This distribution is not supported by Sysdig"
     exit 1
 fi
 
@@ -32,7 +32,13 @@ echo "$(date) - Extracting packages"
 if [ $OS == "Debian" ]; then
   dpkg -x sysdig-agent/draios-${SYSDIG_AGENT_VERSION}-x86_64-agent.deb ./extracted-agent
   cp -R ./extracted-agent/opt/draios/* ${BOSH_INSTALL_TARGET}
-  cp sysdig-agent/${SYSDIG_PROBE_FILENAME} ${BOSH_INSTALL_TARGET}/probe/sysdigcloud-kernel-probe.ko
+
+  PROBE=sysdig-agent/sysdigcloud-probe-${SYSDIG_AGENT_VERSION}-x86_64-${$KVERSION}.ko
+  if [-f $PROBE]; then
+    cp $PROBE ${BOSH_INSTALL_TARGET}/probe/sysdigcloud-kernel-probe.ko
+  else
+    echo "$(date) - Sysdig Probe not available for kernel " $KVERSION
+  fi
 fi
 
 echo "$(date) - Setting up configuration ..."

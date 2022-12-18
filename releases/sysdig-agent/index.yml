@@ -1,0 +1,10 @@
+builds:
+  4c4efbe2-7019-4788-7e5e-264a4334d759:
+    version: 12.9.1-3
+  a464cfc7-e543-4cfd-511f-0585cf6b7c66:
+    version: 12.10.0-1
+  af43e3e3-6699-4ddc-59c6-56fa7a299720:
+    version: 12.9.1-2
+  e0751e78-9dfd-469c-6610-cf14aaa3e73b:
+    version: 12.9.1-1
+format-version: "2"
