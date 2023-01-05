@@ -26,15 +26,14 @@ bosh sync-blobs
 
 if [ "$1" = "--dev" ]; then
   # release a dev version of the agent
-  bosh create-release --force --name ${RELEASE} --version=${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION}+dev.final --tarball=tmp/sysdig-agent-release-${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION}+dev.final.tgz
+  bosh create-release --force --name ${RELEASE} --version=${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION}+${DEV_VERSION} --tarball=tmp/sysdig-agent-release-${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION}+${DEV_VERSION}.tgz
 
   # upload to archive storage
   scp -P 2222 tmp/sysdig-agent-release-${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION}+${DEV_VERSION}.tgz admin@192.168.101.101://volume1/web
 else
   # release a dev version of the agent to ensure the cache is warm
   # (it's better to fail here than to fail when really attempting to release it)
-  bosh create-release --force --name ${RELEASE} --version=${SYSDIG_AGENT_VERSION}-${DEV_VERSION}
-
+  bosh create-release --force --name ${RELEASE} --version=${SYSDIG_AGENT_VERSION}-dev.final
   # finally, release the agent
   bosh create-release --force --final --name ${RELEASE} --version=${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION} --tarball=tmp/sysdig-agent-release-${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION}.tgz
   bosh upload-blobs

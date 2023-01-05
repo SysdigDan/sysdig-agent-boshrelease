@@ -1,0 +1,21 @@
+name: sysdig-agent
+version: 12.10.1-1
+commit_hash: 0b41879
+uncommitted_changes: true
+jobs:
+- name: sysdig-agent
+  version: 2061591bd25db3f140ddc8c4f7f05f1e5c477270c2b298694ab33ed701bcd973
+  fingerprint: 2061591bd25db3f140ddc8c4f7f05f1e5c477270c2b298694ab33ed701bcd973
+  sha1: sha256:45752548374ac4e011f812f53cfc6119f2e31f6c5505888aaad3699a5517e66f
+  packages:
+  - sysdig-agent
+packages:
+- name: sysdig-agent
+  version: 3e3f905043492d7399a99fd1c55029d31884b94fabb39ea49b4e30948b00322f
+  fingerprint: 3e3f905043492d7399a99fd1c55029d31884b94fabb39ea49b4e30948b00322f
+  sha1: sha256:6ac4e2248495cb43c480066b17d62bd53e3027eb03b9862c3a4859f39e5089ee
+  dependencies: []
+license:
+  version: d106ae8fd63c62e3243ad6636a2c2b4b437d366c0169508837ed0a0be4328d6b
+  fingerprint: d106ae8fd63c62e3243ad6636a2c2b4b437d366c0169508837ed0a0be4328d6b
+  sha1: sha256:ebf032d4af493838823083334480bad4c0257137ca4d80ef3bfa7378e444435d
