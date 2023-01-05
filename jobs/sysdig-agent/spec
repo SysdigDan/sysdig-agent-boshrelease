@@ -18,6 +18,9 @@ properties:
   collector_endpoint:
     description: 'The collector URL for Sysdig Monitor or Sysdig Secure. This value is region-dependent in SaaS and is auto-completed on the Get Started page in the UI.'
     default: 'ingest.au1.sysdig.com'
+  collector_port:
+    description: 'The collector port for Sysdig Monitor or Sysdig Secure.'
+    default: '6443'
   proxy:
     description: Proxy settings to connect to the Internet
     example:

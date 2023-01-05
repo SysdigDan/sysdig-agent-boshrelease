@@ -42,17 +42,19 @@ add_blob() {
   bosh add-blob ${SRC}/${1} ${1} || true
 }
 
-remove_stale() {
+remove_stale_files() {
   local spec_files=""
+
   for spec in $(read_spec "${script}"); do
     local downloadfile=$(echo $spec | cut -d'@' -f 1)
+    local pkgname=$(echo $downloadfile | cut -d'/' -f 1)
     local filename=$(echo $downloadfile | cut -d'/' -f 2)
     spec_files="$filename $spec_files"
   done
-  # Remove any files in blobs/sysdig-agent that aren't in spec
-  for saved_file in $(ls blobs/sysdig-agent); do
+
+  for saved_file in $(ls blobs/$pkgname); do
     if [[ !("$spec_files" =~ .*"$saved_file".*) ]]; then
-      bosh remove-blob "sysdig-agent/$saved_file"
+      bosh remove-blob "$pkgname/$saved_file"
     fi
   done
 }
@@ -75,6 +77,7 @@ main() {
   for script in $(pwd)/packages/*/spec ; do
     local base=$(dirname "${script}")
       echo "* Procesing ${script} ..."
+      all_pkg_spec="${script} ${all_pkg_spec}"
 
       for spec in $(read_spec "${script}"); do
         local downloadfile=$(echo $spec | cut -d'@' -f 1)
@@ -84,9 +87,10 @@ main() {
         exec_download "${downloadfile}" "${downloadurl}"
         add_blob "${downloadfile}"
       done
+      remove_stale_files
   done
 
-  remove_stale
+
 }
 
 # Run!

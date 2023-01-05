@@ -3,7 +3,7 @@
 RELEASE="sysdig-agent"
 SYSDIG_AGENT_VERSION=12.10.0
 RELEASE_VERSION=1
-DEV_VERSION=dev.1
+DEV_VERSION=dev.2
 
 TMP_DIR=tmp/
 mkdir -p ${TMP_DIR}
@@ -42,6 +42,9 @@ else
   # upload to archive storage
   scp -P 2222 tmp/sysdig-agent-release-${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION}.tgz admin@192.168.101.101://volume1/web
 
+  # update release version
+  echo ${SYSDIG_AGENT_VERSION} > ./version
+
   # config git
   git config --global user.email "daniel.moloney@sysdig.com"
   git config --global user.name "Daniel Moloney"
@@ -51,7 +54,4 @@ else
   git add .
   git commit -m "Release Sysdig Agent ${SYSDIG_AGENT_VERSION}-${RELEASE_VERSION}"
   git push
-
-  # update release version
-  echo ${SYSDIG_AGENT_VERSION} > ./version
 fi

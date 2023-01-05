@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Unless explicitly stated otherwise all files in this repository are licensed under the Apache 2.0 License.
+# This product includes software developed by Daniel Moloney @ Sysdig.
+# Copyright 2022-Present Daniel Moloney.
+
+set -x
+
+LOG_DIR=/var/vcap/sys/log/sysdig-host-scanner
+LOG_FILE=${LOG_DIR}/sysdig-host-scanner.ctl.log
+
+RUN_DIR=/var/vcap/sys/run/sysdig-host-scanner
+PIDFILE=${RUN_DIR}/host-scanner.pid
+
+main() {
+  case $1 in
+		start)
+			echo "$(date) - Sysdig Host Scanner BOSH Add-on Release <%= spec.release.version %>"
+		  mkdir -p $RUN_DIR $LOG_DIR
+      chown -R vcap:vcap $RUN_DIR $LOG_DIR
+
+			echo $$ > ${PIDFILE}
+
+			echo "$(date) - Starting Sysdig Host Scanner BOSH Add-on Release <%= spec.release.version %>"
+			exec ${SYSDIG_PROG_DIR}/sysdig-host-scanner
+			;;
+		stop)
+			echo "$(date) - Stopping Sysdig Agent BOSH Add-on Release <%= spec.release.version %>"
+			kill -TERM $(pidof sysdig-host-scanner)
+			rm -f ${PIDFILE}
+			;;
+		*)
+			echo "$(date) - Sysdig Host Scanner BOSH Add-on Release <%= spec.release.version %>"
+			echo "Usage: ctl {start|stop}"
+			;;
+	esac
+	exit 0
+}
+
+# Run the main script logic only if the script has been executed directly.
+# This allows us to source the script in order to unit test specific functions
+if [[ "$(basename $0)" == "ctl" ]]; then
+	# Redirect stdout and stderr to the log file, since otherwise there is no way to troubleshoot failed TAS deployments
+	exec 1>>${LOG_FILE} 2>&1
+
+	main "$@"
+fi
+

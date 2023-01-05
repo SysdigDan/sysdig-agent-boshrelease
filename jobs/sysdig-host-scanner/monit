@@ -1,0 +1,5 @@
+check process host-scanner
+  with pidfile /var/vcap/sys/run/sysdig-host-scanner/dragent.pid
+  start program "/var/vcap/jobs/sysdig-host-scanner/bin/ctl start"
+  stop program "/var/vcap/jobs/sysdig-host-scanner/bin/ctl stop"
+  group vcap

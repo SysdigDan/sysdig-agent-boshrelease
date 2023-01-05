@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Unless explicitly stated otherwise all files in this repository are licensed under the Apache 2.0 License.
+# This product includes software developed by Daniel Moloney @ Sysdig.
+# Copyright 2022-Present Daniel Moloney.
+
+set -e -x
+
+JOB_NAME="sysdig-host-scanner"
+BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
+
+KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon|Arista|SUSE)"
+DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || uname -s)
+
+if [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" ]; then
+    OS="Debian"
+else
+    echo "$(date) - This distribution is not supported by Sysdig"
+    exit 1
+fi
+
+echo "$(date) - Setting up Host Scanner Binary"
+if [ $OS == "Debian" ]; then
+  cp -R sysdig-host-scanner/sysdig-host-scanner ${BOSH_INSTALL_TARGET}
+fi

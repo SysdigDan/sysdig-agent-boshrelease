@@ -1,0 +1,11 @@
+---
+name: sysdig-host-scanner
+description: "This job will setup and run Sysdig Host Scanner for Linux"
+packages:
+- sysdig-host-scanner
+templates:
+  bin/ctl.erb: bin/ctl
+
+properties:
+  agent_key:
+    description: 'The agent access key. You can retrieve this from Settings > Agent Installation in either Sysdig Monitor or Sysdig Secure.'

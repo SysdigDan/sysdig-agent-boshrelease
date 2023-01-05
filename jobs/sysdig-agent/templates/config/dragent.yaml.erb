@@ -1,5 +1,6 @@
 customerid: <%= p('agent_key') %>
 collector: <%= p('collector_endpoint') %>
+collector_port: <%= p('collector_port') %>
 tags: bosh_ip:<%= spec.ip %>,bosh_deployment:<%= spec.deployment %>,bosh_az:<%= spec.az %>
 feature:
   mode: <%= p('agent_mode') %>

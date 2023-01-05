@@ -1,0 +1,5 @@
+---
+name: sysdig-host-scanner
+
+files:
+- sysdig-host-scanner/sysdig-host-scanner # https://s3.amazonaws.com/download.draios.com/scanning/bin/sysdig-host-scanner/0.3.2-rc/linux/amd64/sysdig-host-scanner
