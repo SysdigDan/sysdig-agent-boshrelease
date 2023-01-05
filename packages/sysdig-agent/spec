@@ -2,7 +2,7 @@
 name: sysdig-agent
 
 files:
-- sysdig-agent/draios-12.10.0-x86_64-agent.rpm # https://s3.amazonaws.com/download.draios.com/stable/rpm/x86_64/draios-12.10.0-x86_64-agent.rpm
-- sysdig-agent/draios-12.10.0-x86_64-agent.deb # https://s3.amazonaws.com/download.draios.com/stable/deb/stable-amd64/draios-12.10.0-x86_64-agent.deb
-- sysdig-agent/sysdigcloud-probe-12.10.0-x86_64-4.15.0-191-generic.ko  # https://s3.amazonaws.com/download.draios.com/stable/sysdig-probe-binaries/sysdigcloud-probe-12.10.0-x86_64-4.15.0-191-generic-d8051e959d836ee23665f1d33702220a.ko
-- sysdig-agent/sysdigcloud-probe-12.10.0-x86_64-4.15.0-194-generic.ko  # https://s3.amazonaws.com/download.draios.com/stable/sysdig-probe-binaries/sysdigcloud-probe-12.10.0-x86_64-4.15.0-194-generic-fe6ad55938fe8344e5214204e8f937cd.ko
+- sysdig-agent/draios-12.10.1-x86_64-agent.rpm # https://s3.amazonaws.com/download.draios.com/stable/rpm/x86_64/draios-12.10.1-x86_64-agent.rpm
+- sysdig-agent/draios-12.10.1-x86_64-agent.deb # https://s3.amazonaws.com/download.draios.com/stable/deb/stable-amd64/draios-12.10.1-x86_64-agent.deb
+- sysdig-agent/sysdigcloud-probe-12.10.1-x86_64-4.15.0-191-generic.ko  # https://s3.amazonaws.com/download.draios.com/stable/sysdig-probe-binaries/sysdigcloud-probe-12.10.1-x86_64-4.15.0-191-generic-d8051e959d836ee23665f1d33702220a.ko
+- sysdig-agent/sysdigcloud-probe-12.10.1-x86_64-4.15.0-194-generic.ko  # https://s3.amazonaws.com/download.draios.com/stable/sysdig-probe-binaries/sysdigcloud-probe-12.10.1-x86_64-4.15.0-194-generic-fe6ad55938fe8344e5214204e8f937cd.ko

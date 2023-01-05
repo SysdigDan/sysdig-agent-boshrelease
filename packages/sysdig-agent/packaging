@@ -7,7 +7,7 @@
 set -e -x
 
 # Grab the latest versions that are in the directory
-SYSDIG_AGENT_VERSION="12.10.0"
+SYSDIG_AGENT_VERSION="12.10.1"
 
 JOB_NAME="sysdig-agent"
 BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
